@@ -67,7 +67,7 @@
 
 ## Instalacion 🔧
 
-* git clone https://github.com/byteSalgado/router-kill/
+* git clone https://github.com/FacuSecX/router-kill/
 * cd router-kill
 * chmod +x install.sh
 * ./install.sh
