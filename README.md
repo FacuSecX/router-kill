@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/bytesalgado"><img title="Autor" src="https://img.shields.io/badge/Author-Facu%20-blue?style=for-the-badge&logo=github"></a>
+<a href="https://github.com/FacuSecX"><img title="Autor" src="https://img.shields.io/badge/Author-Facu%20-blue?style=for-the-badge&logo=github"></a>
 <a href=""><img title="Version" src="https://img.shields.io/badge/Version-3.0-red?style=for-the-badge&logo="></a>
 </p>
 
@@ -14,7 +14,7 @@
 
 <p align="center">
 <a href="mailto:facusex@gmail.com"><img title="Correo" src="https://img.shields.io/badge/Correo-facusecX@gmail.com-blueviolet?style=for-the-badge&logo=gmai"></a>
-<a href="https://t.me/FacuSecX"><img title="Chat" src="https://img.shields.io/badge/CHAT-TELEGRAM-blue?style=for-the-badge&logo=telegram"></a>
+<a href="https://t.me/FacuSecX"><img title="Chat" src="https://img.shields.io/badge/CHAT-TELEGRAM-blue?style=for-thjlje-badge&logo=telegram"></a>
 </p>
 
 **Router-kill** es un framework diseñado para automatizar el proceso para atacar un router de diferentes maneras. Actualmente las redes WIFI siguen siendo vulnerables a estos ataques y este pequeño programa en BASH ayuda a automatizar a realizar dichos ataques, trabaja principalmente con dependencias muy famosas en distribuciones como **Kali Linux** o **Parrot Security OS**
