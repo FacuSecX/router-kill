@@ -41,8 +41,9 @@
 
 ## Update 5/2/2026
 
-Se removieron funciones obsoletas para la fecha, se corrigieron errores de comandos para Kali y Parrot en sus versiones mas recientes..
-Obsolete features were removed, and command errors for Kali and Parrot were corrected in their latest versions.
+Se eliminaron funciones obsoletas y se corrigieron errores en comandos para **Kali Linux** y **Parrot Security** OS en sus versiones más recientes.
+
+Obsolete features were removed, and command-related issues were fixed for **Kali Linux** and **Parrot Security** OS in their latest versions.
 
 ## Distribuciones compatibles con Router-kill:
 
