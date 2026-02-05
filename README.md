@@ -4,7 +4,7 @@
 
 <p align="center">
 <a href="https://github.com/FacuSecX"><img title="Autor" src="https://img.shields.io/badge/Author-Facu%20-blue?style=for-the-badge&logo=github"></a>
-<a href=""><img title="Version" src="https://img.shields.io/badge/Version-3.0-red?style=for-the-badge&logo="></a>
+<a href=""><img title="Version" src="https://img.shields.io/badge/Version-4.0-red?style=for-the-badge&logo="></a>
 </p>
 
 <p align="center">
@@ -35,8 +35,12 @@
 | Ataque        |   Informacion                                 |
 |---------------|-----------------------------------------------| 
 | Find Panel    | Encuentra el panel administrativo de un sitio |
-| Clone page    | Clona un sitio web index o sitio completo.    |
 | Check SQLI    | Verifica si un sitio es vulnerable a SQLI     |
+
+## Update 5/2/2026
+
+Se removieron funciones obsoletas para la fecha, se corrigieron errores de comandos para Kali y Parrot en sus versiones mas recientes..
+Obsolete features were removed, and command errors for Kali and Parrot were corrected in their latest versions.
 
 ## Distribuciones compatibles con Router-kill:
 
